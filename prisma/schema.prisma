@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  password          String
+  phone             String
+  role              Int
+  firstName         String?
+  lastName          String?
+  fullName          String?
+  gender            Int?
+  birthday          String?
+  isDelete          Boolean?
+  googleId          String?         @unique()
+  resetToken        String?
+  resetTokenExpires BigInt?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  auth              Auth?
+  image             Image?
+  address           UserAddress?
+  permission        UserPermission?
+  transaction       Transaction[]
+
+  @@index([isDelete, email])
+  @@map("user")
+}
+
+model UserAddress {
+  id            String   @id @default(uuid())
+  addressEn     String
+  addressVn     String
+  fullAddressEn String
+  fullAddressVn String
+  cityCode      Int
+  districtCode  Int
+  wardCode      Int
+  isDelete      Boolean?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isDelete])
+  @@map("user_address")
+}
+
+model UserPermission {
+  id        String   @id @default(uuid())
+  create    Boolean
+  update    Boolean
+  remove    Boolean
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isDelete])
+  @@map("user_permission")
+}
+
+model Auth {
+  id        String   @id @default(uuid())
+  token     String   @db.VarChar(3000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  cashflow    String
+  paymentMode String
+  description String
+  amount      Int
+  isDelete    Boolean?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([isDelete, cashflow, paymentMode, amount, description])
+  @@map("transaction")
+}
+
+model Category {
+  id          String        @id @default(uuid())
+  nameEn      String
+  nameVn      String
+  type        String
+  isDelete    Boolean?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  transaction Transaction[]
+
+  @@index([isDelete, nameEn, nameVn])
+  @@map("category")
+}
+
+model City {
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameVn    String
+  code      Int
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isDelete])
+  @@map("city")
+}
+
+model District {
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameVn    String
+  code      Int
+  cityCode  Int
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isDelete])
+  @@map("district")
+}
+
+model Ward {
+  id           String   @id @default(uuid())
+  nameEn       String
+  nameVn       String
+  code         Int
+  districtCode Int
+  isDelete     Boolean?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isDelete])
+  @@map("ward")
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  path      String
+  size      Int
+  publicId  String
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isDelete])
+  @@map("image")
+}
