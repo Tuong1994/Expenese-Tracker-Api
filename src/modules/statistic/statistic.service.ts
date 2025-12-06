@@ -31,6 +31,7 @@ export class StatisticService {
         ],
       },
       select: { amount: true },
+      orderBy: [{ updatedAt: 'asc' }],
     });
     const expenseTransactions = await this.prisma.transaction.findMany({
       where: {
@@ -41,6 +42,7 @@ export class StatisticService {
         ],
       },
       select: { amount: true },
+      orderBy: [{ updatedAt: 'asc' }],
     });
     const totalIncome = incomeTransactions.reduce((sum, income) => sum + income.amount, 0);
     const totalExpense = expenseTransactions.reduce((sum, expense) => sum + expense.amount, 0);
@@ -62,6 +64,7 @@ export class StatisticService {
           { createdAt: { gte: start, lte: end } },
         ],
       },
+      orderBy: [{ updatedAt: 'asc' }],
       include: { category: { select: { id: true, nameEn: true, nameVn: true, type: true } } },
     });
     const items = this.statisticHelper.convertCollection(expenseTransactions, langCode);
@@ -79,5 +82,55 @@ export class StatisticService {
       };
     });
     return totalExpenses;
+  }
+
+  async getBalances(statistic: StatisticDto) {
+    const { startDate, endDate } = statistic;
+    const start = this.statisticHelper.formatStartDateUTCTime(startDate);
+    const end = this.statisticHelper.formatEndDateUTCTime(endDate);
+    const incomeTransactions = await this.prisma.transaction.findMany({
+      where: {
+        AND: [
+          { isDelete: this.isNotDelete },
+          { cashflow: { equals: ECashflow.INCOME } },
+          { createdAt: { gte: start, lte: end } },
+        ],
+      },
+      orderBy: [{ updatedAt: 'asc' }],
+    });
+    const expenseTransactions = await this.prisma.transaction.findMany({
+      where: {
+        AND: [
+          { isDelete: this.isNotDelete },
+          { cashflow: { equals: ECashflow.EXPENSE } },
+          { createdAt: { gte: start, lte: end } },
+        ],
+      },
+      orderBy: [{ updatedAt: 'asc' }],
+    });
+    const incomes = this.statisticHelper.sumMonthlyTotals(incomeTransactions);
+    const expenses = this.statisticHelper.sumMonthlyTotals(expenseTransactions);
+    const icomesExpenses = incomes.map((income) => {
+      const expense = expenses.find((exp) => exp.month === income.month);
+      return { month: income.month, income: income.total, expense: expense.total };
+    });
+    const balances = incomes.map((income) => {
+      const expense = expenses.find((exp) => exp.month === income.month);
+      const amount = income.total - (expense.total ?? 0);
+      return { month: income.month, amount };
+    });
+    return { balances, icomesExpenses };
+  }
+
+  async getRecentTransactions(query: QueryDto) {
+    const { langCode } = query;
+    const transactions = await this.prisma.transaction.findMany({
+      take: 5,
+      where: { isDelete: this.isNotDelete },
+      orderBy: [{ updatedAt: 'desc' }],
+      include: { category: { select: { id: true, nameEn: true, nameVn: true, type: true } } },
+    });
+    const items = this.statisticHelper.convertCollection(transactions, langCode);
+    return items;
   }
 }

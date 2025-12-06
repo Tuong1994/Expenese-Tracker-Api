@@ -18,4 +18,16 @@ export class StatisticController {
   getTotalExpenses(@Query() query: QueryDto, @Body() statistic: StatisticDto) {
     return this.statisticService.getTotalExpenses(query, statistic);
   }
+
+  @Get('balances')
+  @HttpCode(HttpStatus.OK)
+  getBalances(@Body() statistic: StatisticDto) {
+    return this.statisticService.getBalances(statistic);
+  }
+
+  @Get('recentTransactions')
+  @HttpCode(HttpStatus.OK)
+  getRecentTransactions(@Query() query: QueryDto) {
+    return this.statisticService.getRecentTransactions(query);
+  }
 }
