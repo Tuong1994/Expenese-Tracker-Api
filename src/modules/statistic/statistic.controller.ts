@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Query, Get } from '@nestjs/common';
 import { StatisticService } from './statistic.service';
 import { StatisticDto } from './statistic.dto';
 import { QueryDto } from 'src/common/dto/query.dto';
@@ -7,19 +7,19 @@ import { QueryDto } from 'src/common/dto/query.dto';
 export class StatisticController {
   constructor(private statisticService: StatisticService) {}
 
-  @Get('summary')
+  @Post('summary')
   @HttpCode(HttpStatus.OK)
   getSummary(@Body() statistic: StatisticDto) {
     return this.statisticService.getSummary(statistic);
   }
 
-  @Get('totalExpenses')
+  @Post('totalExpenses')
   @HttpCode(HttpStatus.OK)
   getTotalExpenses(@Query() query: QueryDto, @Body() statistic: StatisticDto) {
     return this.statisticService.getTotalExpenses(query, statistic);
   }
 
-  @Get('balances')
+  @Post('balances')
   @HttpCode(HttpStatus.OK)
   getBalances(@Body() statistic: StatisticDto) {
     return this.statisticService.getBalances(statistic);

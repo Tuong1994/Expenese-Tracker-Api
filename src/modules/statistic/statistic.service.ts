@@ -68,19 +68,17 @@ export class StatisticService {
       include: { category: { select: { id: true, nameEn: true, nameVn: true, type: true } } },
     });
     const items = this.statisticHelper.convertCollection(expenseTransactions, langCode);
-    const totalExpense = expenseTransactions.reduce((sum, expense) => sum + expense.amount, 0);
-    const totalExpenses = items.map((item) => {
-      const { id, amount, category } = item;
-      return {
-        id: id,
-        amount: amount,
-        percent: Number(((amount / totalExpense) * 100).toFixed(2)),
-        category: {
-          name: category.name,
-          type: category.type,
-        },
-      };
-    });
+    const totalExpense = items.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalByCategory = items.reduce<Record<string, { name: string; amount: number }>>((acc, item) => {
+      const type = item.category.type;
+      acc[type] = { name: item.category.name, amount: (acc[type]?.amount || 0) + item.amount };
+      return acc;
+    }, {});
+    const totalExpenses = Object.entries(totalByCategory).map(([key, value]) => ({
+      name: value.name,
+      amount: value.amount,
+      percent: Number(((value.amount / totalExpense) * 100).toFixed(2)),
+    }));
     return totalExpenses;
   }
 
