@@ -74,7 +74,8 @@ export class StatisticService {
       acc[type] = { name: item.category.name, amount: (acc[type]?.amount || 0) + item.amount };
       return acc;
     }, {});
-    const totalExpenses = Object.entries(totalByCategory).map(([key, value]) => ({
+    const totalExpenses = Object.entries(totalByCategory).map(([type, value]) => ({
+      type,
       name: value.name,
       amount: value.amount,
       percent: Number(((value.amount / totalExpense) * 100).toFixed(2)),
