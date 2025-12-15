@@ -28,12 +28,4 @@ export class StatisticHelper {
       total,
     }));
   }
-
-  formatStartDateUTCTime(date: Date | string) {
-    return new Date(date);
-  }
-
-  formatEndDateUTCTime(date: Date | string) {
-    return new Date(new Date(date).setUTCHours(23, 59, 59, 999));
-  }
 }

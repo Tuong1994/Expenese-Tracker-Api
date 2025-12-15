@@ -5,6 +5,7 @@ import { Paging } from 'src/common/type/base';
 import { TransactionWithPayload } from './transaction.type';
 import { TransactionHelper } from './transaction.helper';
 import { TransactionDto } from './transaction.dto';
+import { ECashflow, EPaymentMode } from './transaction.enum';
 import responseMessage from 'src/common/message';
 import utils from 'src/utils';
 
@@ -18,10 +19,18 @@ export class TransactionService {
   ) {}
 
   async getTransactions(query: QueryDto) {
-    const { page, limit, keywords, sortBy, langCode } = query;
+    const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, langCode } = query;
+    const { start, end } = utils.formatDateUTCTime(startDate, endDate);
     let collection: Paging<TransactionWithPayload> = utils.defaultCollection();
     const transactions = await this.prisma.transaction.findMany({
-      where: { isDelete: { equals: false } },
+      where: {
+        AND: [
+          { isDelete: { equals: false } },
+          { cashflow: cashflow === ECashflow.ALL ? undefined : cashflow },
+          { paymentMode: paymentMode === EPaymentMode.ALL ? undefined : paymentMode },
+          { createdAt: { gte: start, lte: end } },
+        ],
+      },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
       include: { category: { select: { ...this.transactionHelper.getSelectCategoryFields() } } },
     });

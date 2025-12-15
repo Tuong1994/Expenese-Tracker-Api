@@ -4,6 +4,7 @@ import { ECashflow } from '../transaction/transaction.enum';
 import { StatisticDto } from './statistic.dto';
 import { StatisticHelper } from './statistic.helper';
 import { QueryDto } from 'src/common/dto/query.dto';
+import utils from 'src/utils';
 
 @Injectable()
 export class StatisticService {
@@ -16,8 +17,7 @@ export class StatisticService {
 
   async getSummary(statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
-    const start = this.statisticHelper.formatStartDateUTCTime(startDate);
-    const end = this.statisticHelper.formatEndDateUTCTime(endDate);
+    const { start, end } = utils.formatDateUTCTime(startDate, endDate);
     const transactions = await this.prisma.transaction.findMany({
       where: { AND: [{ isDelete: this.isNotDelete }, { createdAt: { gte: start, lte: end } }] },
       select: { amount: true },
@@ -54,8 +54,7 @@ export class StatisticService {
   async getTotalExpenses(query: QueryDto, statistic: StatisticDto) {
     const { langCode } = query;
     const { startDate, endDate } = statistic;
-    const start = this.statisticHelper.formatStartDateUTCTime(startDate);
-    const end = this.statisticHelper.formatEndDateUTCTime(endDate);
+    const { start, end } = utils.formatDateUTCTime(startDate, endDate);
     const expenseTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
@@ -85,8 +84,7 @@ export class StatisticService {
 
   async getBalances(statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
-    const start = this.statisticHelper.formatStartDateUTCTime(startDate);
-    const end = this.statisticHelper.formatEndDateUTCTime(endDate);
+    const { start, end } = utils.formatDateUTCTime(startDate, endDate);
     const incomeTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [

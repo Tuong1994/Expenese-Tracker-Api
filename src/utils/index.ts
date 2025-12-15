@@ -104,8 +104,7 @@ const utils = {
     const telNumberLength = 11;
     const mobileNumberLength = 10;
 
-    if (phone.length !== telNumberLength && phone.length !== mobileNumberLength)
-      return 'Invalid phone number';
+    if (phone.length !== telNumberLength && phone.length !== mobileNumberLength) return 'Invalid phone number';
 
     for (let i = 0; i < phone.length; i++) {
       telFormat = telFormat.replace('x', phone[i]);
@@ -131,6 +130,12 @@ const utils = {
 
   filterByKeywords: (value: string, keywords: string) => {
     return value.toLowerCase().includes(keywords.toLowerCase());
+  },
+
+  formatDateUTCTime(startDate?: Date | string, endDate?: Date | string) {
+    const startD = startDate ?? new Date();
+    const endD = endDate ?? new Date();
+    return { start: new Date(startD), end: new Date(new Date(endD).setUTCHours(23, 59, 59, 999)) };
   },
 };
 
