@@ -29,4 +29,6 @@ export class QueryDto {
   cashflow?: ECashflow;
   paymentMode?: EPaymentMode;
   langCode?: ELang;
+  min?: string
+  max?: string
 }

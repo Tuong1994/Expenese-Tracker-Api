@@ -19,7 +19,7 @@ export class TransactionService {
   ) {}
 
   async getTransactions(query: QueryDto) {
-    const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, langCode } = query;
+    const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, min, max, langCode } = query;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
     let collection: Paging<TransactionWithPayload> = utils.defaultCollection();
     const transactions = await this.prisma.transaction.findMany({
@@ -28,6 +28,7 @@ export class TransactionService {
           { isDelete: { equals: false } },
           { cashflow: cashflow === ECashflow.ALL ? undefined : cashflow },
           { paymentMode: paymentMode === EPaymentMode.ALL ? undefined : paymentMode },
+          { amount: { gte: min ? Number(min) : undefined, lte: max ? Number(max) : undefined } },
           { createdAt: { gte: start, lte: end } },
         ],
       },
