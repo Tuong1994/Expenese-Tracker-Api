@@ -8,6 +8,7 @@ import { UserResponse } from './user.type';
 import { UserDto } from 'src/modules/user/user.dto';
 import { UserHelper } from './user.helper';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Request } from 'express';
 import responseMessage from 'src/common/message';
 import utils from 'src/utils';
 
@@ -56,8 +57,10 @@ export class UserService {
     return { ...collection, items };
   }
 
-  async getUser(query: QueryDto) {
+  async getUser(req: Request, query: QueryDto) {
     const { userId, langCode } = query;
+    const token = req.cookies.tokenPayload
+    console.log(token)
     const user = await this.prisma.user.findUnique({
       where: { id: userId, isDelete: { equals: false } },
       select: {

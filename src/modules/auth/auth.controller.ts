@@ -18,7 +18,7 @@ export class AuthController {
 
   @Post('signIn')
   @HttpCode(HttpStatus.OK)
-  signIn(@Res() res: Response, @Query() query: QueryDto, @Body() auth: AuthDto) {
+  signIn(@Res({ passthrough: true }) res: Response, @Query() query: QueryDto, @Body() auth: AuthDto) {
     return this.authService.signIn(res, query, auth);
   }
 
@@ -30,7 +30,7 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleGuard)
-  googleCallback(@Req() req: Request, @Res() res: Response) {
+  googleCallback(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.googleCallback(req, res);
   }
 
@@ -47,7 +47,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(@Req() req: Request, @Res() res: Response) {
+  refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.refresh(req, res);
   }
 

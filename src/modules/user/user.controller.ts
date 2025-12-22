@@ -11,6 +11,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { QueryDto } from 'src/common/dto/query.dto';
@@ -24,6 +25,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOption } from 'src/common/config/multer.config';
 import { PermissionGuard } from 'src/common/guard/permission.guard';
 import { Permission } from 'src/common/decorator/permission.decorator';
+import { Request } from 'express';
 
 @Controller('api/user')
 export class UserController {
@@ -37,8 +39,8 @@ export class UserController {
 
   @Get('detail')
   @HttpCode(HttpStatus.OK)
-  getUser(@Query() query: QueryDto) {
-    return this.userService.getUser(query);
+  getUser(@Req() req: Request, @Query() query: QueryDto) {
+    return this.userService.getUser(req, query);
   }
 
   @Post('create')

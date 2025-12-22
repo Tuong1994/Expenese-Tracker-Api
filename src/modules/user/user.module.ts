@@ -4,6 +4,7 @@ import { UserService } from './user.service';
 import { UserHelper } from './user.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware';
+import { CheckTokenMiddle } from 'src/common/middleware/checkToken.middleware';
 
 @Module({
   controllers: [UserController],
@@ -27,6 +28,10 @@ export class UserModule implements NestModule {
           method: RequestMethod.PUT,
         },
       ],
+    });
+    consumer.apply(CheckTokenMiddle).forRoutes({
+      path: 'api/user/detail',
+      method: RequestMethod.GET,
     });
   }
 }
