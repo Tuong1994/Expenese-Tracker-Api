@@ -5,10 +5,11 @@ import { UserHelper } from './user.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware';
 import { CheckTokenMiddle } from 'src/common/middleware/checkToken.middleware';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [UserController],
-  providers: [UserService, UserHelper],
+  providers: [UserService, JwtService, UserHelper],
 })
 export class UserModule implements NestModule {
   constructor(private prisma: PrismaService) {}
@@ -19,10 +20,6 @@ export class UserModule implements NestModule {
       prisma: this.prisma,
       schema: 'user',
       routes: [
-        {
-          path: 'api/user/detail',
-          method: RequestMethod.GET,
-        },
         {
           path: 'api/user/update',
           method: RequestMethod.PUT,
