@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, Req } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { QueryPaging } from 'src/common/decorator/query.decorator';
 import { QueryDto } from 'src/common/dto/query.dto';
 import { TransactionDto } from './transaction.dto';
+import { Request } from 'express';
 
 @Controller('api/transaction')
 export class TransactionController {
@@ -10,8 +11,8 @@ export class TransactionController {
 
   @Get('list')
   @HttpCode(HttpStatus.OK)
-  getTransactions(@QueryPaging() query: QueryDto) {
-    return this.transactionService.getTransactions(query);
+  getTransactions(@Req() req: Request, @QueryPaging() query: QueryDto) {
+    return this.transactionService.getTransactions(req, query);
   }
 
   @Get('detail')

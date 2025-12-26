@@ -4,10 +4,12 @@ import { TransactionService } from './transaction.service';
 import { TransactionHelper } from './transaction.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware';
+import { CheckTokenMiddle } from 'src/common/middleware/checkToken.middleware';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [TransactionController],
-  providers: [TransactionService, TransactionHelper],
+  providers: [TransactionService, TransactionHelper, JwtService],
 })
 export class TransactionModule implements NestModule {
   constructor(private prisma: PrismaService) {}
@@ -27,6 +29,10 @@ export class TransactionModule implements NestModule {
           method: RequestMethod.PUT,
         },
       ],
+    });
+    consumer.apply(CheckTokenMiddle).forRoutes({
+      path: 'api/transaction/list',
+      method: RequestMethod.GET,
     });
   }
 }

@@ -13,8 +13,8 @@ import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from '../auth/auth.type';
 import { Request } from 'express';
 import responseMessage from 'src/common/message';
-import utils from 'src/utils';
 import envKeys from 'src/common/env';
+import utils from 'src/utils';
 
 const { CREATE_ERROR, UPDATE_SUCCESS, REMOVE_SUCCESS, RESTORE_SUCCESS, NOT_FOUND, NO_DATA_RESTORE } = responseMessage;
 

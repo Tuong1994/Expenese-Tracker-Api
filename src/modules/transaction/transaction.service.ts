@@ -6,27 +6,39 @@ import { TransactionWithPayload } from './transaction.type';
 import { TransactionHelper } from './transaction.helper';
 import { TransactionDto } from './transaction.dto';
 import { ECashflow, EPaymentMode } from './transaction.enum';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { TokenPayload } from '../auth/auth.type';
+import { Request } from 'express';
 import responseMessage from 'src/common/message';
+import envKeys from 'src/common/env';
 import utils from 'src/utils';
 
 const { CREATE_ERROR, UPDATE_SUCCESS, REMOVE_SUCCESS, NOT_FOUND, NO_DATA_RESTORE, RESTORE_SUCCESS } = responseMessage;
 
+const { ACCESS_TOKEN } = envKeys;
+
 @Injectable()
 export class TransactionService {
   constructor(
+    private jwt: JwtService,
+    private config: ConfigService,
     private prisma: PrismaService,
     private transactionHelper: TransactionHelper,
   ) {}
 
-  async getTransactions(query: QueryDto) {
+  async getTransactions(req: Request, query: QueryDto) {
     const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, min, max, categoryId, langCode } =
       query;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
+    const { token: accessToken } = req.cookies.tokenPayload;
+    const decode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
     let collection: Paging<TransactionWithPayload> = utils.defaultCollection();
     const transactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
           { categoryId },
+          { userId: decode.id },
           { isDelete: { equals: false } },
           { cashflow: cashflow === ECashflow.ALL ? undefined : cashflow },
           { paymentMode: paymentMode === EPaymentMode.ALL ? undefined : paymentMode },
