@@ -38,6 +38,7 @@ export class UserController {
   }
 
   @Get('detail')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   getUser(@Req() req: Request, @Query() query: QueryDto) {
     return this.userService.getUser(req, query);

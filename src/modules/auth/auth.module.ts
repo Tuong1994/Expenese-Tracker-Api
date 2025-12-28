@@ -10,7 +10,6 @@ import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from 'src/common/strategy/google.strategy';
 import { UserHelper } from '../user/user.helper';
-import { CheckTokenMiddle } from 'src/common/middleware/checkToken.middleware';
 
 @Module({
   imports: [PassportModule.register({ defaultStrategy: 'google' }), JwtModule.register({})],
@@ -32,23 +31,5 @@ export class AuthModule implements NestModule {
         },
       ],
     });
-    consumer.apply(CheckTokenMiddle).forRoutes(
-      {
-        path: 'api/auth/refresh',
-        method: RequestMethod.POST,
-      },
-      {
-        path: 'api/auth/authenticate',
-        method: RequestMethod.GET,
-      },
-      {
-        path: 'api/auth/oauthInfo',
-        method: RequestMethod.GET,
-      },
-      {
-        path: 'api/auth/googleCallback',
-        method: RequestMethod.GET,
-      },
-    );
   }
 }

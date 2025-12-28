@@ -4,7 +4,6 @@ import { TransactionService } from './transaction.service';
 import { TransactionHelper } from './transaction.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware';
-import { CheckTokenMiddle } from 'src/common/middleware/checkToken.middleware';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({
@@ -29,10 +28,6 @@ export class TransactionModule implements NestModule {
           method: RequestMethod.PUT,
         },
       ],
-    });
-    consumer.apply(CheckTokenMiddle).forRoutes({
-      path: 'api/transaction/list',
-      method: RequestMethod.GET,
     });
   }
 }

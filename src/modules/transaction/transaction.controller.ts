@@ -1,15 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { QueryPaging } from 'src/common/decorator/query.decorator';
 import { QueryDto } from 'src/common/dto/query.dto';
 import { TransactionDto } from './transaction.dto';
 import { Request } from 'express';
+import { JwtGuard } from 'src/common/guard/jwt.guard';
 
 @Controller('api/transaction')
 export class TransactionController {
   constructor(private transactionService: TransactionService) {}
 
   @Get('list')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   getTransactions(@Req() req: Request, @QueryPaging() query: QueryDto) {
     return this.transactionService.getTransactions(req, query);
