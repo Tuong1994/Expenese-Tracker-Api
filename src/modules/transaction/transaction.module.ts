@@ -4,11 +4,12 @@ import { TransactionService } from './transaction.service';
 import { TransactionHelper } from './transaction.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { applyCheckIdMiddleware } from 'src/common/middleware/applyFn.middleware';
+import { AuthHelper } from '../auth/auth.helper';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [TransactionController],
-  providers: [TransactionService, TransactionHelper, JwtService],
+  providers: [TransactionService, TransactionHelper, AuthHelper, JwtService],
 })
 export class TransactionModule implements NestModule {
   constructor(private prisma: PrismaService) {}

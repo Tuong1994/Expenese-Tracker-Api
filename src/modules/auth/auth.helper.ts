@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { TokenPayload } from './auth.type';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { CookieOptions } from 'express';
+import { CookieOptions, Request } from 'express';
 import { User } from '@prisma/client';
 import envKeys from 'src/common/env';
 
@@ -58,6 +58,12 @@ export class AuthHelper {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000,
     };
+  }
+
+  getJwtTokenDecode(req: Request): TokenPayload {
+    const { token: accessToken } = req.cookies.tokenPayload;
+    const decode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
+    return decode
   }
 
   getDecodePayload(record: User): TokenPayload {

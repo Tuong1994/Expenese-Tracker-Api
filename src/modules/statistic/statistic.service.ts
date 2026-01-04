@@ -4,6 +4,8 @@ import { ECashflow } from '../transaction/transaction.enum';
 import { StatisticDto } from './statistic.dto';
 import { StatisticHelper } from './statistic.helper';
 import { QueryDto } from 'src/common/dto/query.dto';
+import { AuthHelper } from '../auth/auth.helper';
+import { Request } from 'express';
 import utils from 'src/utils';
 
 @Injectable()
@@ -11,21 +13,24 @@ export class StatisticService {
   constructor(
     private prisma: PrismaService,
     private statisticHelper: StatisticHelper,
+    private authHelper: AuthHelper,
   ) {}
 
   private isNotDelete = { equals: false };
 
-  async getSummary(statistic: StatisticDto) {
+  async getSummary(req: Request, statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
+    const decode = this.authHelper.getJwtTokenDecode(req);
     const transactions = await this.prisma.transaction.findMany({
-      where: { AND: [{ isDelete: this.isNotDelete }, { createdAt: { gte: start, lte: end } }] },
+      where: { AND: [{ isDelete: this.isNotDelete }, { userId: decode.id }, { createdAt: { gte: start, lte: end } }] },
       select: { amount: true },
     });
     const incomeTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
           { isDelete: this.isNotDelete },
+          { userId: decode.id },
           { cashflow: { equals: ECashflow.INCOME } },
           { createdAt: { gte: start, lte: end } },
         ],
@@ -37,6 +42,7 @@ export class StatisticService {
       where: {
         AND: [
           { isDelete: this.isNotDelete },
+          { userId: decode.id },
           { cashflow: { equals: ECashflow.EXPENSE } },
           { createdAt: { gte: start, lte: end } },
         ],
@@ -51,14 +57,16 @@ export class StatisticService {
     return { totalIncome, totalExpense, totalBalance, totalTransactions };
   }
 
-  async getTotalExpenses(query: QueryDto, statistic: StatisticDto) {
+  async getTotalExpenses(req: Request, query: QueryDto, statistic: StatisticDto) {
     const { langCode } = query;
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
+    const decode = this.authHelper.getJwtTokenDecode(req);
     const expenseTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
           { isDelete: this.isNotDelete },
+          { userId: decode.id },
           { cashflow: { equals: ECashflow.EXPENSE } },
           { createdAt: { gte: start, lte: end } },
         ],
@@ -82,13 +90,15 @@ export class StatisticService {
     return totalExpenses;
   }
 
-  async getBalances(statistic: StatisticDto) {
+  async getBalances(req: Request, statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
+    const decode = this.authHelper.getJwtTokenDecode(req);
     const incomeTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
           { isDelete: this.isNotDelete },
+          { userId: decode.id },
           { cashflow: { equals: ECashflow.INCOME } },
           { createdAt: { gte: start, lte: end } },
         ],
@@ -99,6 +109,7 @@ export class StatisticService {
       where: {
         AND: [
           { isDelete: this.isNotDelete },
+          { userId: decode.id },
           { cashflow: { equals: ECashflow.EXPENSE } },
           { createdAt: { gte: start, lte: end } },
         ],
@@ -119,11 +130,12 @@ export class StatisticService {
     return { balances, icomesExpenses };
   }
 
-  async getRecentTransactions(query: QueryDto) {
+  async getRecentTransactions(req: Request, query: QueryDto) {
     const { langCode } = query;
+    const decode = this.authHelper.getJwtTokenDecode(req);
     const transactions = await this.prisma.transaction.findMany({
       take: 5,
-      where: { isDelete: this.isNotDelete },
+      where: { AND: [{ isDelete: this.isNotDelete }, { userId: decode.id }] },
       orderBy: [{ updatedAt: 'desc' }],
       include: { category: { select: { id: true, nameEn: true, nameVn: true, type: true } } },
     });

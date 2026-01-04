@@ -1,33 +1,39 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, Query, Get } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, Query, Get, UseGuards, Req } from '@nestjs/common';
 import { StatisticService } from './statistic.service';
 import { StatisticDto } from './statistic.dto';
 import { QueryDto } from 'src/common/dto/query.dto';
+import { JwtGuard } from 'src/common/guard/jwt.guard';
+import { Request } from 'express';
 
 @Controller('api/statistic')
 export class StatisticController {
   constructor(private statisticService: StatisticService) {}
 
   @Post('summary')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  getSummary(@Body() statistic: StatisticDto) {
-    return this.statisticService.getSummary(statistic);
+  getSummary(@Req() req: Request, @Body() statistic: StatisticDto) {
+    return this.statisticService.getSummary(req, statistic);
   }
 
   @Post('totalExpenses')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  getTotalExpenses(@Query() query: QueryDto, @Body() statistic: StatisticDto) {
-    return this.statisticService.getTotalExpenses(query, statistic);
+  getTotalExpenses(@Req() req: Request, @Query() query: QueryDto, @Body() statistic: StatisticDto) {
+    return this.statisticService.getTotalExpenses(req, query, statistic);
   }
 
   @Post('balances')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  getBalances(@Body() statistic: StatisticDto) {
-    return this.statisticService.getBalances(statistic);
+  getBalances(@Req() req: Request, @Body() statistic: StatisticDto) {
+    return this.statisticService.getBalances(req, statistic);
   }
 
   @Get('recentTransactions')
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  getRecentTransactions(@Query() query: QueryDto) {
-    return this.statisticService.getRecentTransactions(query);
+  getRecentTransactions(@Req() req: Request, @Query() query: QueryDto) {
+    return this.statisticService.getRecentTransactions(req, query);
   }
 }

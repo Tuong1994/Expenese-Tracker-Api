@@ -6,24 +6,18 @@ import { TransactionWithPayload } from './transaction.type';
 import { TransactionHelper } from './transaction.helper';
 import { TransactionDto } from './transaction.dto';
 import { ECashflow, EPaymentMode } from './transaction.enum';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { TokenPayload } from '../auth/auth.type';
+import { AuthHelper } from '../auth/auth.helper';
 import { Request } from 'express';
 import responseMessage from 'src/common/message';
-import envKeys from 'src/common/env';
 import utils from 'src/utils';
 
 const { CREATE_ERROR, UPDATE_SUCCESS, REMOVE_SUCCESS, NOT_FOUND, NO_DATA_RESTORE, RESTORE_SUCCESS } = responseMessage;
 
-const { ACCESS_TOKEN } = envKeys;
-
 @Injectable()
 export class TransactionService {
   constructor(
-    private jwt: JwtService,
-    private config: ConfigService,
     private prisma: PrismaService,
+    private authHelper: AuthHelper,
     private transactionHelper: TransactionHelper,
   ) {}
 
@@ -31,8 +25,7 @@ export class TransactionService {
     const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, min, max, categoryId, langCode } =
       query;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
-    const { token: accessToken } = req.cookies.tokenPayload;
-    const decode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
+    const decode = this.authHelper.getJwtTokenDecode(req)
     let collection: Paging<TransactionWithPayload> = utils.defaultCollection();
     const transactions = await this.prisma.transaction.findMany({
       where: {

@@ -7,27 +7,21 @@ import { UserAddress } from '@prisma/client';
 import { UserResponse } from './user.type';
 import { UserDto } from 'src/modules/user/user.dto';
 import { UserHelper } from './user.helper';
-import { JwtService } from '@nestjs/jwt';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { ConfigService } from '@nestjs/config';
-import { TokenPayload } from '../auth/auth.type';
+import { AuthHelper } from '../auth/auth.helper';
 import { Request } from 'express';
 import responseMessage from 'src/common/message';
-import envKeys from 'src/common/env';
 import utils from 'src/utils';
 
 const { CREATE_ERROR, UPDATE_SUCCESS, REMOVE_SUCCESS, RESTORE_SUCCESS, NOT_FOUND, NO_DATA_RESTORE } = responseMessage;
-
-const { ACCESS_TOKEN } = envKeys;
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private config: ConfigService,
-    private jwt: JwtService,
     private cloudinary: CloudinaryService,
     private userHelper: UserHelper,
+    private authHelper: AuthHelper,
   ) {}
 
   async getUsers(query: QueryDto) {
@@ -67,8 +61,7 @@ export class UserService {
 
   async getUser(req: Request, query: QueryDto) {
     const { langCode } = query;
-    const { token: accessToken } = req.cookies.tokenPayload;
-    const decode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
+    const decode = this.authHelper.getJwtTokenDecode(req);
     const user = await this.prisma.user.findUnique({
       where: { id: decode.id, isDelete: { equals: false } },
       select: {
