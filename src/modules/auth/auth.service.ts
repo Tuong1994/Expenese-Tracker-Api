@@ -221,9 +221,9 @@ export class AuthService {
       where: { email },
       data: { resetToken: tokenHash, resetTokenExpires: expires },
     });
-    const devUrl = admin ? 'http://localhost:5173' : 'http://localhost:3000';
+    const devUrl = 'http://localhost:3000';
     const prodUrl = admin ? 'https://healthy-food-admin.vercel.app' : 'https://healthy-food-main.vercel.app';
-    const resetUrl = `${prodUrl}/auth/resetPassword/${token}?langCode=${langCode}`;
+    const resetUrl = `${devUrl}/auth/resetPassword/${token}`;
     const subject = langCode === ELang.EN ? 'Reset password' : 'Đặt lại mật khẩu';
     try {
       await this.emailHelper.sendGmail({

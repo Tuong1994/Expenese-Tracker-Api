@@ -20,7 +20,7 @@ export class EmailHelper {
       },
     });
     const emailOptions: nodemailer.SendMailOptions = {
-      from: '"Healthy Food" <nbtuong1994@gmail.com>',
+      from: '"Expenses Tracker" <nbtuong1994@gmail.com>',
       ...options,
     };
     await transporter.sendMail(emailOptions);
