@@ -46,7 +46,6 @@ export class AuthController {
   }
 
   @Post('refresh')
-  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.refresh(req, res);
@@ -72,7 +71,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request, @Res() res: Response) {
     return this.authService.logout(req, res);
