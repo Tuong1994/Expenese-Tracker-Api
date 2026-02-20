@@ -46,15 +46,15 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.refresh(req, res);
   }
 
   @Post('changePassword')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   changePassword(@Query() query: QueryDto, @Body() password: AuthChangePasswordDto) {
     return this.authService.changePassword(query, password);
   }
@@ -72,9 +72,10 @@ export class AuthController {
   }
 
   @Post('logout')
+  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  logout(@Res() res: Response, @Query() query: QueryDto) {
-    return this.authService.logout(res, query);
+  logout(@Req() req: Request, @Res() res: Response) {
+    return this.authService.logout(req, res);
   }
 
   @Post('example')

@@ -27,7 +27,7 @@ export class AuthHelper {
   }
 
   async getAccessToken(payload: TokenPayload) {
-    const expiresIn = '30m';
+    const expiresIn = '15m';
     const expirationTimeInSeconds = Date.now() + this.parseDurationToMilliseconds(expiresIn);
     const token = await this.jwt.signAsync(payload, {
       secret: this.config.get(ACCESS_TOKEN),

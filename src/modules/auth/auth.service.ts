@@ -86,11 +86,11 @@ export class AuthService {
       update: { token: refreshToken },
     });
     res.cookie(COOKIE_NAME, accessToken, this.authHelper.getCookiesOptions());
-    return res.json({
+    return {
       expired: accessToken.expirationTimeInSeconds,
       isAuth: true,
       info,
-    });
+    };
   }
 
   async googleSignIn() {}
@@ -130,11 +130,11 @@ export class AuthService {
       where: { email: decode.email },
       select: { ...this.userHelper.getSelectFields() },
     });
-    return res.json({
+    return {
       expired: expirationTimeInSeconds,
       isAuth: true,
       info,
-    });
+    };
   }
 
   async refresh(req: Request, res: Response) {
@@ -150,11 +150,11 @@ export class AuthService {
         const payload = this.authHelper.getDecodePayload(refreshDecode);
         const tokenPayload = await this.authHelper.getAccessToken(payload);
         res.cookie(COOKIE_NAME, tokenPayload, this.authHelper.getCookiesOptions());
-        res.json({ expired: tokenPayload.expirationTimeInSeconds });
         return { expired: tokenPayload.expirationTimeInSeconds };
       }
     } catch (error) {
       if (error instanceof TokenExpiredError) throw new ForbiddenException(TOKEN_EXPIRED);
+      throw error
     }
   }
 
@@ -256,11 +256,18 @@ export class AuthService {
     throw new HttpException(RESET_PASSWORD_SUCCESS, HttpStatus.OK);
   }
 
-  async logout(res: Response, query: QueryDto) {
-    const { userId } = query;
-    const auth = await this.prisma.auth.findUnique({ where: { userId } });
-    if (!auth) throw new HttpException(LOGOUT_SUCCESS, HttpStatus.OK);
-    await this.prisma.auth.delete({ where: { id: auth.id } });
+  async logout(req: Request, res: Response) {
+    if (!req.cookies.tokenPayload) throw new ForbiddenException(NO_TOKEN);
+    const { token: accessToken } = req.cookies.tokenPayload;
+    if (!accessToken) throw new ForbiddenException(NO_TOKEN);
+    try {
+      const decode = this.jwt.decode(accessToken) as TokenPayload;
+      const auth = await this.prisma.auth.findUnique({ where: { userId: decode.id } });
+      if (!auth) throw new HttpException(LOGOUT_SUCCESS, HttpStatus.OK);
+      await this.prisma.auth.delete({ where: { id: auth.id } });
+    } catch (error) {
+      console.log('Token expired or invalid during logout, proceeding to clear cookies.');
+    }
     res.cookie(COOKIE_NAME, '', { maxAge: 0, httpOnly: true });
     throw new HttpException(LOGOUT_SUCCESS, HttpStatus.OK);
   }
