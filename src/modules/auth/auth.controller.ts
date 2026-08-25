@@ -54,8 +54,8 @@ export class AuthController {
   @Post('changePassword')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  changePassword(@Query() query: QueryDto, @Body() password: AuthChangePasswordDto) {
-    return this.authService.changePassword(query, password);
+  changePassword(@Req() req: Request, @Body() password: AuthChangePasswordDto) {
+    return this.authService.changePassword(req, password);
   }
 
   @Post('forgotPassword')

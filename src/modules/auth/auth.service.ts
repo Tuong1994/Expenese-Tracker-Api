@@ -139,11 +139,8 @@ export class AuthService {
 
   async refresh(req: Request, res: Response) {
     try {
-      if (!req.cookies.tokenPayload) throw new ForbiddenException(NO_TOKEN);
-      const { token: accessToken } = req.cookies.tokenPayload;
-      if (!accessToken) throw new ForbiddenException(NO_TOKEN);
-      const accessDecode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
-      const auth = await this.prisma.auth.findUnique({ where: { userId: accessDecode.id } });
+      const { decode } = this.authHelper.getJwtTokenDecode(req);
+      const auth = await this.prisma.auth.findUnique({ where: { userId: decode.id } });
       if (!auth) throw new ForbiddenException(NO_TOKEN);
       const refreshDecode = this.jwt.verify(auth.token, { secret: this.config.get(REFRESH_TOKEN) });
       if (refreshDecode) {
@@ -154,15 +151,12 @@ export class AuthService {
       }
     } catch (error) {
       if (error instanceof TokenExpiredError) throw new ForbiddenException(TOKEN_EXPIRED);
-      throw error
+      throw error;
     }
   }
 
   async authenticate(req: Request, res: Response) {
-    if (!req.cookies.tokenPayload) throw new ForbiddenException(NO_TOKEN);
-    const { token: loginToken } = req.cookies.tokenPayload;
-    if (!loginToken) throw new ForbiddenException(NO_TOKEN);
-    const decode = this.jwt.decode(loginToken) as TokenPayload;
+    const { decode, token } = this.authHelper.getJwtTokenDecode(req);
     const info = await this.prisma.user.findUnique({
       where: { id: decode.id },
       include: {
@@ -176,7 +170,7 @@ export class AuthService {
     const payload = this.authHelper.getDecodePayload(info);
     const accessToken = await this.authHelper.getAccessToken(payload);
     try {
-      this.jwt.verify(loginToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
+      this.jwt.verify(token, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
       return {
         accessToken: accessToken.token,
         expired: accessToken.expirationTimeInSeconds,
@@ -199,15 +193,15 @@ export class AuthService {
     }
   }
 
-  async changePassword(query: QueryDto, password: AuthChangePasswordDto) {
-    const { userId } = query;
+  async changePassword(req: Request, password: AuthChangePasswordDto) {
     const { oldPassword, newPassword } = password;
-    const customer = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!customer) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
-    const isAuth = bcryptjs.compareSync(oldPassword, customer.password);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
+    const user = await this.prisma.user.findUnique({ where: { id: decode.id } });
+    if (!user) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
+    const isAuth = bcryptjs.compareSync(oldPassword, user.password);
     if (!isAuth) throw new ForbiddenException(CONFIRM_PASSWORD_NOT_MATCH);
     const hash = utils.bcryptHash(newPassword);
-    await this.prisma.user.update({ where: { id: userId }, data: { password: hash } });
+    await this.prisma.user.update({ where: { id: decode.id }, data: { password: hash } });
     throw new HttpException(CHANGE_PASSWORD_SUCCESS, HttpStatus.OK);
   }
 

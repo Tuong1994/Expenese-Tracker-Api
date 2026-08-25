@@ -1,13 +1,16 @@
 import * as crypto from 'crypto';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { TokenPayload } from './auth.type';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { CookieOptions, Request } from 'express';
 import { User } from '@prisma/client';
+import responseMessage from 'src/common/message';
 import envKeys from 'src/common/env';
 
 const { ACCESS_TOKEN, REFRESH_TOKEN } = envKeys;
+
+const { NO_TOKEN } = responseMessage;
 
 @Injectable()
 export class AuthHelper {
@@ -60,10 +63,12 @@ export class AuthHelper {
     };
   }
 
-  getJwtTokenDecode(req: Request): TokenPayload {
-    const { token: accessToken } = req.cookies.tokenPayload;
-    const decode = this.jwt.verify(accessToken, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
-    return decode
+  getJwtTokenDecode(req: Request): { decode: TokenPayload; token: string } {
+    if (!req.cookies.tokenPayload) throw new ForbiddenException(NO_TOKEN);
+    const { token } = req.cookies.tokenPayload;
+    if (!token) throw new ForbiddenException(NO_TOKEN);
+    const decode = this.jwt.verify(token, { secret: this.config.get(ACCESS_TOKEN) }) as TokenPayload;
+    return { decode, token };
   }
 
   getDecodePayload(record: User): TokenPayload {
