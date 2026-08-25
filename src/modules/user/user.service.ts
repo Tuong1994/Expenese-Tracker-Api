@@ -61,7 +61,7 @@ export class UserService {
 
   async getUser(req: Request, query: QueryDto) {
     const { langCode } = query;
-    const decode = this.authHelper.getJwtTokenDecode(req);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     const user = await this.prisma.user.findUnique({
       where: { id: decode.id, isDelete: { equals: false } },
       select: {

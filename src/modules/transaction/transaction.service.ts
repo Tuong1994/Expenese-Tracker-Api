@@ -25,7 +25,7 @@ export class TransactionService {
     const { page, limit, keywords, sortBy, cashflow, paymentMode, startDate, endDate, min, max, categoryId, langCode } =
       query;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
-    const decode = this.authHelper.getJwtTokenDecode(req)
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     let collection: Paging<TransactionWithPayload> = utils.defaultCollection();
     const transactions = await this.prisma.transaction.findMany({
       where: {

@@ -21,7 +21,7 @@ export class StatisticService {
   async getSummary(req: Request, statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
-    const decode = this.authHelper.getJwtTokenDecode(req);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     const transactions = await this.prisma.transaction.findMany({
       where: { AND: [{ isDelete: this.isNotDelete }, { userId: decode.id }, { createdAt: { gte: start, lte: end } }] },
       select: { amount: true },
@@ -61,7 +61,7 @@ export class StatisticService {
     const { langCode } = query;
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
-    const decode = this.authHelper.getJwtTokenDecode(req);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     const expenseTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
@@ -93,7 +93,7 @@ export class StatisticService {
   async getBalances(req: Request, statistic: StatisticDto) {
     const { startDate, endDate } = statistic;
     const { start, end } = utils.formatDateUTCTime(startDate, endDate);
-    const decode = this.authHelper.getJwtTokenDecode(req);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     const incomeTransactions = await this.prisma.transaction.findMany({
       where: {
         AND: [
@@ -132,7 +132,7 @@ export class StatisticService {
 
   async getRecentTransactions(req: Request, query: QueryDto) {
     const { langCode } = query;
-    const decode = this.authHelper.getJwtTokenDecode(req);
+    const { decode } = this.authHelper.getJwtTokenDecode(req);
     const transactions = await this.prisma.transaction.findMany({
       take: 5,
       where: { AND: [{ isDelete: this.isNotDelete }, { userId: decode.id }] },
