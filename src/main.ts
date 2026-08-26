@@ -9,7 +9,7 @@ import cookieParser = require('cookie-parser');
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const corsOptions: CorsOptions = {
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'https://expenses-tracker-page.vercel.app'],
     credentials: true,
     exposedHeaders: ['set-cookie'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],

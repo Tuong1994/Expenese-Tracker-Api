@@ -206,7 +206,7 @@ export class AuthService {
   }
 
   async forgotPassword(query: QueryDto, data: AuthForgotPasswordDto) {
-    const { langCode, admin } = query;
+    const { langCode } = query;
     const { email } = data;
     const auth = await this.prisma.user.findUnique({ where: { email } });
     if (!auth) throw new ForbiddenException(EMAIL_NOT_MATCH);
@@ -216,8 +216,8 @@ export class AuthService {
       data: { resetToken: tokenHash, resetTokenExpires: expires },
     });
     const devUrl = 'http://localhost:3000';
-    const prodUrl = admin ? 'https://healthy-food-admin.vercel.app' : 'https://healthy-food-main.vercel.app';
-    const resetUrl = `${devUrl}/auth/resetPassword/${token}`;
+    const prodUrl = 'https://expenese-tracker-api.onrender.com';
+    const resetUrl = `${prodUrl}/auth/resetPassword/${token}`;
     const subject = langCode === ELang.EN ? 'Reset password' : 'Đặt lại mật khẩu';
     try {
       await this.emailHelper.sendGmail({
